@@ -1,0 +1,712 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartShop — Student Shopping Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root {
+  --primary: #0f766e;
+  --primary-light: #14b8a6;
+  --pale: #ccfbf1;
+  --accent: #f59e0b;
+  --bg: #f8fffe;
+  --bg2: #f0fdf9;
+  --white: #ffffff;
+  --text: #0f2027;
+  --text2: #4b5563;
+  --text3: #9ca3af;
+  --border: #d1faf4;
+  --red: #ef4444;
+  --shadow: 0 4px 20px rgba(15,118,110,.1);
+  --shadow-lg: 0 12px 40px rgba(15,118,110,.18);
+  --r: 14px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); }
+h1,h2,h3 { font-family:'Syne',sans-serif; }
+
+.navbar {
+  position:sticky; top:0; z-index:100;
+  display:flex; align-items:center; gap:16px;
+  height:60px; padding:0 32px;
+  background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+  border-bottom:1.5px solid var(--border);
+}
+.brand { display:flex; align-items:center; gap:8px; font-size:18px; }
+.brand span { font-size:11px; background:var(--pale); color:var(--primary); padding:2px 8px; border-radius:20px; }
+.nav-links { display:flex; gap:4px; margin-left:auto; }
+.nav-links a {
+  padding:6px 14px; border-radius:8px; font-size:14px;
+  font-weight:500; color:var(--text2); cursor:pointer; transition:.2s;
+}
+.nav-links a:hover { background:var(--pale); color:var(--primary); }
+.cart-btn {
+  background:var(--pale); color:var(--primary);
+  padding:6px 14px; border-radius:20px; cursor:pointer;
+  font-weight:700; display:flex; align-items:center; gap:6px;
+}
+.cart-btn:hover { background:var(--primary); color:white; }
+
+.sec { display:none; min-height:calc(100vh - 60px); }
+.sec.active { display:block; }
+
+.hero {
+  display:flex; align-items:center; gap:40px;
+  padding:64px; background:linear-gradient(135deg,#f0fdf9,#fffbeb);
+  flex-wrap:wrap;
+}
+.hero-text { flex:1; min-width:280px; }
+.badge { display:inline-block; background:var(--primary); color:white; font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px; margin-bottom:14px; }
+.hero-text h1 { font-size:clamp(36px,5vw,60px); font-weight:800; line-height:1.1; margin-bottom:16px; }
+.hero-text h1 em { color:var(--primary); font-style:normal; }
+.hero-text p { color:var(--text2); font-size:16px; margin-bottom:24px; line-height:1.6; }
+.search-bar { display:flex; border-radius:12px; overflow:hidden; box-shadow:var(--shadow-lg); border:1.5px solid var(--border); margin-bottom:16px; }
+.search-bar input { flex:1; border:none; outline:none; padding:12px 16px; font-size:15px; font-family:'DM Sans',sans-serif; }
+.search-bar button { background:var(--primary); color:white; border:none; padding:12px 20px; font-size:15px; font-weight:600; cursor:pointer; }
+.search-bar button:hover { background:var(--primary-light); }
+.chips, .chips-wrap { display:flex; flex-wrap:wrap; gap:8px; }
+.chips span {
+  background:white; border:1.5px solid var(--border); padding:6px 12px;
+  border-radius:20px; font-size:13px; cursor:pointer; color:var(--text2); transition:.2s;
+}
+.chips span:hover { background:var(--primary); color:white; border-color:var(--primary); }
+.hero-cards { display:flex; flex-direction:column; gap:12px; }
+.hcard {
+  background:white; border-radius:14px; padding:14px 18px;
+  display:flex; align-items:center; gap:14px;
+  box-shadow:var(--shadow); border:1.5px solid var(--border);
+  animation:fl 4s ease-in-out infinite;
+}
+.hcard:nth-child(2) { animation-delay:1.3s; margin-left:20px; }
+.hcard:nth-child(3) { animation-delay:2.6s; }
+.hcard span { font-size:28px; }
+.hcard b { font-family:'Syne',sans-serif; font-size:14px; }
+.hcard p { font-size:12px; color:var(--primary); font-weight:600; margin-top:2px; }
+@keyframes fl { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+.section-wrap { padding:48px 64px; }
+.section-wrap h2 { font-size:26px; margin-bottom:24px; }
+.row-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+.row-head h2 { font-size:26px; }
+
+.cat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:14px; }
+.cat-card {
+  background:white; border:1.5px solid var(--border); border-radius:var(--r);
+  padding:20px 12px; text-align:center; cursor:pointer;
+  transition:.25s; box-shadow:var(--shadow);
+}
+.cat-card:hover { border-color:var(--primary); transform:translateY(-4px); }
+.cat-card .ico { font-size:32px; margin-bottom:8px; }
+.cat-card .nm { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; }
+.cat-card .cnt { font-size:11px; color:var(--text3); margin-top:2px; }
+
+.prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:20px; }
+.prod-grid.pad { padding:0 64px 64px; }
+
+.prod-card {
+  background:white; border:1.5px solid var(--border); border-radius:var(--r);
+  box-shadow:var(--shadow); overflow:hidden; transition:.25s;
+  display:flex; flex-direction:column; cursor:pointer;
+}
+.prod-card:hover { border-color:var(--primary); transform:translateY(-5px); box-shadow:var(--shadow-lg); }
+.img-wrap { height:180px; background:var(--bg2); display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+.img-wrap img { width:100%; height:100%; object-fit:cover; transition:.3s; }
+.prod-card:hover .img-wrap img { transform:scale(1.06); }
+.disc-badge { position:absolute; top:10px; left:10px; background:var(--red); color:white; font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; }
+.prod-body { padding:14px; flex:1; display:flex; flex-direction:column; }
+.prod-cat { font-size:11px; font-weight:600; color:var(--primary); text-transform:uppercase; letter-spacing:.07em; margin-bottom:5px; }
+.prod-name { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; margin-bottom:6px; line-height:1.3; }
+.prod-desc { font-size:13px; color:var(--text2); line-height:1.5; margin-bottom:10px; flex:1; }
+.prod-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+.tag { font-size:11px; padding:2px 7px; background:var(--pale); color:var(--primary); border-radius:20px; }
+.price-row { display:flex; align-items:flex-end; gap:7px; margin-bottom:10px; }
+.price { font-family:'Syne',sans-serif; font-size:20px; font-weight:800; }
+.orig { font-size:12px; color:var(--text3); text-decoration:line-through; }
+.disc { font-size:12px; font-weight:700; color:#16a34a; }
+.rating { font-size:12px; color:var(--text2); margin-bottom:12px; }
+.stars { color:var(--accent); }
+.actions { display:flex; gap:8px; }
+
+.btn-primary { background:var(--primary); color:white; border:none; border-radius:10px; padding:10px 16px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Syne',sans-serif; transition:.2s; flex:1; }
+.btn-primary:hover { background:var(--primary-light); }
+.btn-outline { background:transparent; color:var(--primary); border:1.5px solid var(--primary); border-radius:10px; padding:9px 16px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Syne',sans-serif; transition:.2s; }
+.btn-outline:hover { background:var(--primary); color:white; }
+.w-full { width:100%; }
+
+.page-head { padding:40px 64px 24px; border-bottom:1.5px solid var(--border); margin-bottom:28px; }
+.page-head h2 { font-size:30px; margin-bottom:14px; }
+.filters { display:flex; gap:10px; flex-wrap:wrap; }
+.filters input, .filters select { padding:9px 13px; border:1.5px solid var(--border); border-radius:10px; font-family:'DM Sans',sans-serif; font-size:14px; background:white; outline:none; }
+.filters input:focus, .filters select:focus { border-color:var(--primary); }
+
+.rec-layout { display:grid; grid-template-columns:400px 1fr; min-height:calc(100vh - 60px); }
+.rec-form-panel { padding:40px; border-right:1.5px solid var(--border); background:var(--bg2); }
+.rec-form-panel h2 { font-size:26px; margin-bottom:8px; }
+.rec-form-panel > p { color:var(--text2); margin-bottom:28px; line-height:1.6; }
+.form-group { margin-bottom:24px; }
+.form-group label { display:block; font-weight:600; font-size:14px; margin-bottom:10px; }
+input[type=range] { width:100%; appearance:none; height:6px; background:var(--border); border-radius:3px; cursor:pointer; }
+input[type=range]::-webkit-slider-thumb { appearance:none; width:20px; height:20px; background:var(--primary); border-radius:50%; border:3px solid white; box-shadow:0 2px 8px rgba(15,118,110,.4); }
+.range-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--text3); margin-top:5px; }
+.chip { padding:6px 13px; border-radius:20px; font-size:13px; font-weight:500; cursor:pointer; border:1.5px solid var(--border); background:white; color:var(--text2); transition:.2s; }
+.chip:hover { border-color:var(--primary); color:var(--primary); }
+.chip.sel { background:var(--primary); color:white; border-color:var(--primary); }
+.rec-results { padding:40px; overflow-y:auto; }
+.rec-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--text3); text-align:center; }
+.best-label { display:inline-block; background:var(--accent); color:white; font-size:12px; font-weight:700; padding:3px 10px; border-radius:6px; margin-bottom:12px; }
+.tips-box { background:var(--pale); border:1.5px solid var(--border); border-radius:var(--r); padding:18px 22px; margin-top:20px; }
+.tips-box h4 { color:var(--primary); margin-bottom:10px; }
+.tips-box p { font-size:14px; color:var(--text2); margin-bottom:5px; }
+.savings { background:#dcfce7; border:1.5px solid #86efac; border-radius:10px; padding:10px 16px; font-size:14px; font-weight:600; color:#16a34a; margin-top:10px; text-align:center; }
+
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:199; display:none; }
+.overlay.open { display:block; }
+.cart-sidebar { position:fixed; top:0; right:-400px; width:360px; height:100vh; background:white; z-index:200; box-shadow:-8px 0 40px rgba(0,0,0,.15); transition:right .35s cubic-bezier(.4,0,.2,1); display:flex; flex-direction:column; }
+.cart-sidebar.open { right:0; }
+.cart-head { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1.5px solid var(--border); }
+.cart-head h3 { font-size:18px; font-family:'Syne',sans-serif; }
+.cart-head button { background:none; border:none; font-size:20px; cursor:pointer; }
+.cart-items { flex:1; overflow-y:auto; padding:14px; }
+.empty-msg { text-align:center; color:var(--text3); padding:40px 0; }
+.cart-item { display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); align-items:center; }
+.cart-item img { width:54px; height:54px; object-fit:cover; border-radius:8px; background:var(--bg2); }
+.ci-name { font-size:13px; font-weight:600; margin-bottom:3px; }
+.ci-price { font-size:14px; font-weight:700; color:var(--primary); }
+.ci-del { background:none; border:none; font-size:18px; cursor:pointer; color:var(--text3); }
+.ci-del:hover { color:var(--red); }
+.cart-foot { padding:18px 22px; border-top:1.5px solid var(--border); }
+.total { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:12px; }
+
+.toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:var(--text); color:white; padding:10px 24px; border-radius:30px; font-size:14px; opacity:0; pointer-events:none; z-index:300; transition:opacity .3s; white-space:nowrap; }
+.toast.show { opacity:1; }
+
+.loader { display:flex; gap:8px; justify-content:center; padding:48px; grid-column:1/-1; }
+.loader span { width:10px; height:10px; border-radius:50%; background:var(--primary); animation:dp 1.2s infinite; }
+.loader span:nth-child(2){animation-delay:.2s} .loader span:nth-child(3){animation-delay:.4s}
+@keyframes dp { 0%,80%,100%{transform:scale(.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
+
+.debug-banner { background:#fef3c7; border-bottom:2px solid #f59e0b; padding:8px 20px; font-size:13px; color:#92400e; text-align:center; font-weight:600; }
+
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:299; display:none; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal-box { background:white; border-radius:18px; max-width:600px; width:100%; max-height:85vh; overflow-y:auto; position:relative; }
+.modal-close { position:absolute; top:14px; right:14px; background:white; border:none; width:34px; height:34px; border-radius:50%; font-size:18px; cursor:pointer; box-shadow:var(--shadow); z-index:2; }
+.modal-img { height:240px; }
+.modal-body { padding:24px 28px 28px; }
+.modal-specs { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
+.modal-spec-item { background:var(--bg2); border-radius:10px; padding:10px 14px; }
+.modal-spec-label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; }
+.modal-spec-value { font-size:14px; font-weight:600; margin-top:2px; }
+
+@media(max-width:900px){
+  .hero{padding:32px 20px;} .section-wrap{padding:32px 20px;} .page-head{padding:28px 20px 18px;}
+  .prod-grid.pad{padding:0 20px 40px;} .rec-layout{grid-template-columns:1fr;} .rec-form-panel{border-right:none;border-bottom:1.5px solid var(--border);}
+  .navbar{padding:0 16px;} .nav-links{display:none;}
+  .modal-specs{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="debug-banner" id="debugBanner">🔧 Loading SmartShop — checking backend connection...</div>
+
+<nav class="navbar">
+  <div class="brand">🎓 <strong>SmartShop</strong> <span>Student Edition</span></div>
+  <div class="nav-links">
+    <a onclick="showSection('home')">Home</a>
+    <a onclick="showSection('products')">Products</a>
+    <a onclick="showSection('recommend')">Get Advice</a>
+    <a onclick="showSection('deals')">Hot Deals</a>
+  </div>
+  <div class="cart-btn" onclick="toggleCart()">🛒 <span id="cartCount">0</span></div>
+</nav>
+
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-head"><h3>Your Cart 🛒</h3><button onclick="toggleCart()">✕</button></div>
+  <div class="cart-items" id="cartItems"><p class="empty-msg">Cart is empty!</p></div>
+  <div class="cart-foot" id="cartFoot" style="display:none">
+    <div class="total">Total: ₹<span id="cartTotal">0</span></div>
+    <button class="btn-primary w-full" onclick="checkout()">Buy Now</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalBg(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<section id="sec-home" class="sec active">
+  <div class="hero">
+    <div class="hero-text">
+      <div class="badge">🤖 AI-Powered</div>
+      <h1>Shop Smart.<br/><em>Study Harder.</em></h1>
+      <p>Find laptops, phones, bags & more — within your student budget.</p>
+      <div class="search-bar">
+        <input id="heroInput" type="text" placeholder="Search laptops, phones, bags..." />
+        <button onclick="heroSearch()">Search →</button>
+      </div>
+      <div class="chips">
+        <span onclick="quickSearch('budget laptop')">💻 Budget Laptop</span>
+        <span onclick="quickSearch('camera phone')">📱 Camera Phone</span>
+        <span onclick="quickSearch('headphones study')">🎧 Study Headphones</span>
+        <span onclick="quickSearch('college bag')">🎒 College Bag</span>
+      </div>
+    </div>
+    <div class="hero-cards">
+      <div class="hcard"><span>🎓</span><div><b>Student Deals</b><p>Up to 67% OFF</p></div></div>
+      <div class="hcard"><span>💰</span><div><b>Budget Advisor</b><p>Smart picks</p></div></div>
+      <div class="hcard"><span>📦</span><div><b>10+ Products</b><p>Curated for you</p></div></div>
+    </div>
+  </div>
+
+  <div class="section-wrap">
+    <h2>Browse by Category</h2>
+    <div class="cat-grid" id="catGrid"></div>
+  </div>
+
+  <div class="section-wrap">
+    <div class="row-head">
+      <h2>🔥 Hot Deals</h2>
+      <button class="btn-outline" onclick="showSection('deals')">View All</button>
+    </div>
+    <div class="prod-grid" id="homeDeals"><div class="loader"><span></span><span></span><span></span></div></div>
+  </div>
+</section>
+
+<section id="sec-products" class="sec">
+  <div class="page-head">
+    <h2>All Products</h2>
+    <div class="filters">
+      <input id="prodSearch" type="text" placeholder="🔍 Search..." oninput="filterProds()" />
+      <select id="catFilter" onchange="filterProds()"><option value="all">All Categories</option></select>
+      <select id="sortFilter" onchange="filterProds()">
+        <option value="discount">Best Discount</option>
+        <option value="low">Price: Low→High</option>
+        <option value="high">Price: High→Low</option>
+        <option value="rating">Top Rated</option>
+      </select>
+    </div>
+  </div>
+  <div class="prod-grid pad" id="prodGrid"><div class="loader"><span></span><span></span><span></span></div></div>
+</section>
+
+<section id="sec-recommend" class="sec">
+  <div class="rec-layout">
+    <div class="rec-form-panel">
+      <h2>🤖 Smart Advisor</h2>
+      <p>Tell me your needs, I'll find the best pick.</p>
+
+      <div class="form-group">
+        <label>💰 Budget: ₹<span id="budgetLabel">20,000</span></label>
+        <input type="range" id="budgetSlider" min="500" max="80000" value="20000" step="500" oninput="updateBudget()" />
+        <div class="range-labels"><span>₹500</span><span>₹80,000</span></div>
+      </div>
+
+      <div class="form-group">
+        <label>📂 Category</label>
+        <div class="chips-wrap" id="catChips">
+          <div class="chip sel" data-v="all">All</div>
+          <div class="chip" data-v="Laptop">💻 Laptop</div>
+          <div class="chip" data-v="Phone">📱 Phone</div>
+          <div class="chip" data-v="Headphones">🎧 Headphones</div>
+          <div class="chip" data-v="Tablet">📟 Tablet</div>
+          <div class="chip" data-v="Bag">🎒 Bag</div>
+          <div class="chip" data-v="Stationery">✏️ Stationery</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>🎯 Purpose (select multiple)</label>
+        <div class="chips-wrap" id="purposeChips">
+          <div class="chip" data-v="coding">Coding</div>
+          <div class="chip" data-v="design">Design</div>
+          <div class="chip" data-v="gaming">Gaming</div>
+          <div class="chip" data-v="study">Study</div>
+          <div class="chip" data-v="music">Music</div>
+          <div class="chip" data-v="college">College</div>
+        </div>
+      </div>
+
+      <button class="btn-primary w-full" onclick="getRecommend()">✨ Recommend for Me</button>
+    </div>
+
+    <div class="rec-results" id="recResults">
+      <div class="rec-empty">
+        <div style="font-size:64px">🎯</div>
+        <p>Fill the form and click <strong>Recommend for Me</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sec-deals" class="sec">
+  <div class="page-head">
+    <h2>🔥 Hot Deals for Students</h2>
+    <p>Biggest discounts curated just for you</p>
+  </div>
+  <div class="prod-grid pad" id="dealsGrid"><div class="loader"><span></span><span></span><span></span></div></div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "http://127.0.0.1:5000/api";
+
+let allProducts = [];
+let cart = [];
+let selCat = "all";
+let selPurpose = "";
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadProducts();
+  await loadCategories();
+  await loadDeals("homeDeals", 6);
+  setupChips();
+});
+
+function showSection(name) {
+  document.querySelectorAll(".sec").forEach(s => s.classList.remove("active"));
+  document.getElementById("sec-" + name).classList.add("active");
+  if (name === "products") filterProds();
+  if (name === "deals")    loadDeals("dealsGrid", 15);
+}
+
+async function loadProducts() {
+  const banner = document.getElementById("debugBanner");
+  try {
+    const res = await fetch(`${API}/products`);
+    if (!res.ok) throw new Error("Server responded with status " + res.status);
+    allProducts = await res.json();
+    renderGrid("prodGrid", allProducts);
+    banner.textContent = "✅ Connected to backend — " + allProducts.length + " products loaded";
+    banner.style.background = "#dcfce7";
+    banner.style.borderColor = "#16a34a";
+    banner.style.color = "#166534";
+    setTimeout(() => { banner.style.display = "none"; }, 2500);
+  } catch (e) {
+    console.error("loadProducts failed:", e);
+    banner.textContent = "❌ Cannot reach backend at " + API + " — make sure 'python app.py' is running";
+    banner.style.background = "#fee2e2";
+    banner.style.borderColor = "#ef4444";
+    banner.style.color = "#991b1b";
+    toast("⚠️ Start Flask backend first: python app.py");
+  }
+}
+
+async function loadCategories() {
+  try {
+    const res = await fetch(`${API}/categories`);
+    const cats = await res.json();
+    const icons = { Laptop:"💻", Phone:"📱", Headphones:"🎧", Tablet:"📟", Bag:"🎒", Stationery:"✏️" };
+
+    document.getElementById("catGrid").innerHTML = cats.map(c => {
+      const cnt = allProducts.filter(p => p.category === c).length;
+      return `<div class="cat-card" onclick="browseCategory('${c}')">
+        <div class="ico">${icons[c]||"📦"}</div>
+        <div class="nm">${c}</div>
+        <div class="cnt">${cnt} items</div>
+      </div>`;
+    }).join("");
+
+    const sel = document.getElementById("catFilter");
+    cats.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    });
+  } catch(e) { console.error("loadCategories failed:", e); }
+}
+
+async function loadDeals(gridId, limit) {
+  try {
+    const res = await fetch(`${API}/budget-deals?limit=${limit}`);
+    renderGrid(gridId, await res.json());
+  } catch (e) {
+    console.error("loadDeals failed:", e);
+    document.getElementById(gridId).innerHTML = "<p style='padding:40px;color:gray;grid-column:1/-1'>Could not load deals.</p>";
+  }
+}
+
+async function getRecommend() {
+  const budget = parseInt(document.getElementById("budgetSlider").value);
+  const panel = document.getElementById("recResults");
+  panel.innerHTML = `<div style="display:flex;height:100%;align-items:center;justify-content:center"><div class="loader"><span></span><span></span><span></span></div></div>`;
+
+  try {
+    const res = await fetch(`${API}/recommend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ budget, category: selCat, purpose: selPurpose })
+    });
+    showRecommendations(await res.json(), panel);
+  } catch (e) {
+    console.error("getRecommend failed:", e);
+    panel.innerHTML = "<p style='padding:40px;color:red'>❌ Backend not running! Use: python app.py</p>";
+  }
+}
+
+const CATEGORY_EMOJI = {
+  Laptop: "💻", Phone: "📱", Headphones: "🎧",
+  Tablet: "📟", Bag: "🎒", Stationery: "✏️"
+};
+const CATEGORY_COLORS = {
+  Laptop: ["#0f766e","#134e4a"], Phone: ["#7c3aed","#4c1d95"],
+  Headphones: ["#db2777","#831843"], Tablet: ["#2563eb","#1e3a8a"],
+  Bag: ["#ea580c","#7c2d12"], Stationery: ["#16a34a","#14532d"]
+};
+function imgFor(p) {
+  const emoji = CATEGORY_EMOJI[p.category] || "📦";
+  const colors = CATEGORY_COLORS[p.category] || ["#0f766e","#134e4a"];
+  const c1 = colors[0], c2 = colors[1];
+  const shortName = p.name.length > 22 ? p.name.slice(0,20)+"…" : p.name;
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="220">' +
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0%" stop-color="' + c1 + '"/>' +
+    '<stop offset="100%" stop-color="' + c2 + '"/>' +
+    '</linearGradient></defs>' +
+    '<rect width="300" height="220" fill="url(#g)"/>' +
+    '<text x="150" y="95" font-size="64" text-anchor="middle">' + emoji + '</text>' +
+    '<text x="150" y="150" font-size="15" fill="white" text-anchor="middle" font-family="Arial, sans-serif" font-weight="600">' + shortName + '</text>' +
+    '</svg>';
+  return "data:image/svg+xml," + encodeURIComponent(svg);
+}
+
+function renderGrid(id, products) {
+  const g = document.getElementById(id);
+  if (!products || !products.length) {
+    g.innerHTML = "<p style='grid-column:1/-1;text-align:center;padding:48px;color:gray'>No products found.</p>";
+    return;
+  }
+  g.innerHTML = products.map(p => card(p)).join("");
+}
+
+function card(p) {
+  const tags = (p.tags || []).slice(0,3).map(t => `<span class="tag">${t}</span>`).join("");
+  return `
+  <div class="prod-card" onclick="openModal(${p.id})">
+    <div class="img-wrap">
+      <img src="${imgFor(p)}" alt="${p.name}" />
+      <div class="disc-badge">${p.discount}% OFF</div>
+    </div>
+    <div class="prod-body">
+      <div class="prod-cat">${p.category}</div>
+      <div class="prod-name">${p.name}</div>
+      <div class="prod-desc">${p.description}</div>
+      <div class="prod-tags">${tags}</div>
+      <div class="price-row">
+        <div class="price">₹${p.price.toLocaleString("en-IN")}</div>
+        <div class="orig">₹${p.original_price.toLocaleString("en-IN")}</div>
+        <div class="disc">▼${p.discount}%</div>
+      </div>
+      <div class="rating"><span class="stars">${"★".repeat(Math.floor(p.rating))}${"☆".repeat(5-Math.floor(p.rating))}</span> ${p.rating}/5</div>
+      <div class="actions" onclick="event.stopPropagation()">
+        <button class="btn-primary" onclick="addToCart(${p.id})">+ Cart</button>
+        <a href="${p.buy_link}" target="_blank" class="btn-outline">Buy Now</a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openModal(id) {
+  const p = allProducts.find(x => x.id === id) ||
+            [].concat(window.__lastRecBest||[], window.__lastRecAlts||[]).find(x => x.id === id);
+  if (!p) return;
+  const specsHtml = Object.entries(p.specs || {}).map(([k,v]) =>
+    `<div class="modal-spec-item">
+      <div class="modal-spec-label">${k}</div>
+      <div class="modal-spec-value">${v}</div>
+    </div>`).join("");
+  const tags = (p.tags || []).map(t => `<span class="tag">${t}</span>`).join("");
+
+  document.getElementById("modalContent").innerHTML = `
+    <div class="modal-img" style="background-image:url('${imgFor(p)}');background-size:cover;background-position:center;border-radius:18px 18px 0 0;"></div>
+    <div class="modal-body">
+      <div class="prod-cat">${p.category}</div>
+      <h2 style="margin:6px 0 10px">${p.name}</h2>
+      <p style="color:var(--text2);line-height:1.6;margin-bottom:14px">${p.description}</p>
+      <div class="prod-tags" style="margin-bottom:16px">${tags}</div>
+      <div class="modal-specs">${specsHtml}</div>
+      <div class="price-row" style="margin:16px 0">
+        <div class="price" style="font-size:26px">₹${p.price.toLocaleString("en-IN")}</div>
+        <div class="orig">₹${p.original_price.toLocaleString("en-IN")}</div>
+        <div class="disc">▼${p.discount}%</div>
+      </div>
+      <div class="rating" style="margin-bottom:18px"><span class="stars">${"★".repeat(Math.floor(p.rating))}${"☆".repeat(5-Math.floor(p.rating))}</span> ${p.rating}/5</div>
+      <div class="actions">
+        <button class="btn-primary" onclick="addToCart(${p.id});closeModal()">+ Add to Cart</button>
+        <a href="${p.buy_link}" target="_blank" class="btn-outline">Buy Now on Amazon</a>
+      </div>
+    </div>
+  `;
+  document.getElementById("modalOverlay").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("modalOverlay").classList.remove("open");
+}
+
+function closeModalBg(e) {
+  if (e.target.id === "modalOverlay") closeModal();
+}
+
+function showRecommendations(data, panel) {
+  let html = "";
+  window.__lastRecBest = data.best_pick ? [data.best_pick] : [];
+  window.__lastRecAlts = data.alternatives || [];
+
+  if (data.savings_possible)
+    html += `<div class="savings">💸 Save ₹${data.savings_possible.toLocaleString("en-IN")} on your top pick!</div>`;
+  if (data.best_pick) {
+    html += `<div class="best-label">⭐ Best Pick</div>`;
+    html += `<div class="prod-grid">${card(data.best_pick)}</div>`;
+  }
+  if (data.alternatives && data.alternatives.length) {
+    html += `<h3 style="margin:24px 0 14px;font-family:'Syne',sans-serif">🔄 Alternatives</h3>`;
+    html += `<div class="prod-grid">${data.alternatives.map(card).join("")}</div>`;
+  }
+  if (data.budget_tips && data.budget_tips.length) {
+    html += `<div class="tips-box"><h4>💡 Budget Tips</h4>${data.budget_tips.map(t=>`<p>${t}</p>`).join("")}</div>`;
+  }
+  if (!data.best_pick)
+    html = `<div class="rec-empty"><div style="font-size:60px">😔</div><p>No products within your budget. Try increasing it!</p></div>`;
+  panel.innerHTML = html;
+}
+
+function filterProds() {
+  const q = document.getElementById("prodSearch").value.trim().toLowerCase();
+  const cat = document.getElementById("catFilter").value;
+  const sort = document.getElementById("sortFilter").value;
+
+  let list = allProducts.slice();
+
+  if (cat !== "all") {
+    list = list.filter(p => p.category === cat);
+  }
+
+  if (q) {
+    list = list.filter(p => {
+      const haystack = (
+        p.name + " " +
+        p.category + " " +
+        p.description + " " +
+        (p.tags || []).join(" ")
+      ).toLowerCase();
+      return haystack.includes(q);
+    });
+  }
+
+  if (sort === "low") {
+    list.sort((a,b) => a.price - b.price);
+  } else if (sort === "high") {
+    list.sort((a,b) => b.price - a.price);
+  } else if (sort === "rating") {
+    list.sort((a,b) => b.rating - a.rating);
+  } else {
+    list.sort((a,b) => b.discount - a.discount);
+  }
+
+  renderGrid("prodGrid", list);
+}
+
+function browseCategory(cat) {
+  showSection("products");
+  document.getElementById("catFilter").value = cat;
+  document.getElementById("prodSearch").value = "";
+  filterProds();
+}
+
+function quickSearch(q) {
+  showSection("products");
+  document.getElementById("prodSearch").value = q;
+  document.getElementById("catFilter").value = "all";
+  filterProds();
+}
+
+function heroSearch() {
+  const q = document.getElementById("heroInput").value.trim();
+  if (!q) return;
+  quickSearch(q);
+}
+
+function setupChips() {
+  document.querySelectorAll("#catChips .chip").forEach(c => {
+    c.addEventListener("click", () => {
+      document.querySelectorAll("#catChips .chip").forEach(x => x.classList.remove("sel"));
+      c.classList.add("sel");
+      selCat = c.dataset.v;
+    });
+  });
+  document.querySelectorAll("#purposeChips .chip").forEach(c => {
+    c.addEventListener("click", () => {
+      c.classList.toggle("sel");
+      selPurpose = [...document.querySelectorAll("#purposeChips .chip.sel")].map(x=>x.dataset.v).join(" ");
+    });
+  });
+}
+
+function updateBudget() {
+  const v = parseInt(document.getElementById("budgetSlider").value);
+  document.getElementById("budgetLabel").textContent = v.toLocaleString("en-IN");
+}
+
+function addToCart(id) {
+  const p = allProducts.find(x => x.id === id) ||
+            [].concat(window.__lastRecBest||[], window.__lastRecAlts||[]).find(x => x.id === id);
+  if (!p) return;
+  if (cart.find(x => x.id === id)) { toast("✅ Already in cart!"); return; }
+  cart.push(p);
+  updateCart();
+  toast(`🛒 ${p.name} added to cart!`);
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(x => x.id !== id);
+  updateCart();
+}
+
+function updateCart() {
+  document.getElementById("cartCount").textContent = cart.length;
+  const items = document.getElementById("cartItems");
+  const foot  = document.getElementById("cartFoot");
+  if (!cart.length) {
+    items.innerHTML = `<p class="empty-msg">Cart is empty!</p>`;
+    foot.style.display = "none";
+    return;
+  }
+  foot.style.display = "block";
+  items.innerHTML = cart.map(p => `
+    <div class="cart-item">
+      <img src="${imgFor(p)}" />
+      <div style="flex:1">
+        <div class="ci-name">${p.name}</div>
+        <div class="ci-price">₹${p.price.toLocaleString("en-IN")}</div>
+      </div>
+      <button class="ci-del" onclick="removeFromCart(${p.id})">🗑️</button>
+    </div>`).join("");
+  document.getElementById("cartTotal").textContent =
+    cart.reduce((s,p)=>s+p.price,0).toLocaleString("en-IN");
+}
+
+function toggleCart() {
+  document.getElementById("cartSidebar").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("open");
+}
+
+function checkout() {
+  toast("🎉 Order placed! (Demo)");
+  cart = []; updateCart(); toggleCart();
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 3000);
+}
+</script>
+</body>
+</html>
